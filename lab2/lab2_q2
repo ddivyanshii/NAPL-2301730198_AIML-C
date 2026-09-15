@@ -1,0 +1,52 @@
+package main
+
+import "fmt"
+
+func main() {
+	var n, x, index int
+	a := []int{}
+
+	fmt.Print("How many numbers? ")
+	fmt.Scan(&n)
+
+	for i := 0; i < n; i++ {
+		fmt.Print("Enter value: ")
+		fmt.Scan(&x)
+		a = append(a, x)
+	}
+	fmt.Println("Add:", a)
+
+	fmt.Print("Enter index to remove: ")
+	fmt.Scan(&index)
+	a = append(a[:index], a[index+1:]...)
+	fmt.Println("Remove:", a)
+
+	fmt.Print("Enter index to update: ")
+	fmt.Scan(&index)
+	fmt.Print("Enter new value: ")
+	fmt.Scan(&x)
+	a[index] = x
+	fmt.Println("Update:", a)
+
+	m := make(map[string]int)
+	var subject string
+	var marks int
+
+	for i := 0; i < n; i++ {
+		fmt.Print("subject and marks: ")
+		fmt.Scan(&subject, &marks)
+		m[subject] = marks
+	}
+
+	m[subject] = marks
+	fmt.Println("Insert:", m)
+
+	fmt.Print("Subject to delete: ")
+	fmt.Scan(&subject)
+	delete(m, subject)
+	fmt.Println("Delete:", m)
+
+	fmt.Print("Subject to lookup: ")
+	fmt.Scan(&subject)
+	fmt.Println("Lookup:", m[subject])
+}
