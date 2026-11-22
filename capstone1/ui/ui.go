@@ -1,3 +1,4 @@
+// Package ui implements the menu-driven console interface for the student management system.
 package ui
 
 import (
@@ -15,23 +16,30 @@ import (
 
 var errCancelled = errors.New("cancelled")
 
+// UI manages interactive console prompts and table rendering over injected I/O streams.
 type UI struct {
 	svc *service.Service
 	in  *bufio.Scanner
 	out io.Writer
 }
 
+// New creates a UI wired to svc and the given input/output streams.
 func New(svc *service.Service, in io.Reader, out io.Writer) *UI {
 	return &UI{svc: svc, in: bufio.NewScanner(in), out: out}
 }
 
+// Run starts the interactive menu loop until the user exits or input closes.
 func (u *UI) Run() error {
 	u.println("\nWelcome to the Student Management System")
 	for {
 		u.printMenu()
 		choice, err := u.read("Enter choice (1-6): ")
 		if err != nil {
-			return u.endOf(err)
+			if errors.Is(err, errCancelled) {
+				u.println("  Already at the main menu.")
+				continue
+			}
+			return u.handleStreamError(err)
 		}
 		switch choice {
 		case "1":
@@ -52,24 +60,28 @@ func (u *UI) Run() error {
 			continue
 		}
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return u.endOf(err)
+			if errors.Is(err, io.EOF) || u.in.Err() != nil {
+				return u.handleStreamError(err)
 			}
-			u.endOf(err)
+			u.reportOpError(err)
 		}
 	}
 }
 
-func (u *UI) endOf(err error) error {
-	switch {
-	case errors.Is(err, io.EOF):
+func (u *UI) handleStreamError(err error) error {
+	if errors.Is(err, io.EOF) {
 		u.println("\nInput closed. Goodbye!")
-	case errors.Is(err, errCancelled):
-		u.println("  Cancelled.")
-	default:
-		u.println("  ✗ Error:", err)
+		return nil
 	}
-	return nil
+	return err
+}
+
+func (u *UI) reportOpError(err error) {
+	if errors.Is(err, errCancelled) {
+		u.println("  Cancelled.")
+		return
+	}
+	u.println("  ✗ Error:", err)
 }
 
 func (u *UI) printMenu() {
@@ -135,11 +147,10 @@ func (u *UI) search() error {
 	}
 	switch choice {
 	case "1":
-		v, err := u.ask("Student ID", "", func(v string) error { _, err := parseID(v); return err })
+		id, err := u.askID("Student ID")
 		if err != nil {
 			return err
 		}
-		id, _ := strconv.Atoi(v)
 		st, err := u.svc.SearchByID(id)
 		if err != nil {
 			return err
@@ -170,11 +181,10 @@ func (u *UI) search() error {
 
 func (u *UI) updateStudent() error {
 	u.println("\n--- Update Student ---")
-	v, err := u.ask("Student ID to update", "", func(v string) error { _, err := parseID(v); return err })
+	id, err := u.askID("Student ID to update")
 	if err != nil {
 		return err
 	}
-	id, _ := strconv.Atoi(v)
 	cur, err := u.svc.SearchByID(id)
 	if err != nil {
 		return err
@@ -197,11 +207,10 @@ func (u *UI) updateStudent() error {
 
 func (u *UI) deleteStudent() error {
 	u.println("\n--- Delete Student ---")
-	v, err := u.ask("Student ID to delete", "", func(v string) error { _, err := parseID(v); return err })
+	id, err := u.askID("Student ID to delete")
 	if err != nil {
 		return err
 	}
-	id, _ := strconv.Atoi(v)
 	st, err := u.svc.SearchByID(id)
 	if err != nil {
 		return err
@@ -226,6 +235,18 @@ func (u *UI) deleteStudent() error {
 	}
 	u.println("  ✓ Student deleted.")
 	return nil
+}
+
+func (u *UI) askID(label string) (int, error) {
+	v, err := u.ask(label, "", func(v string) error {
+		_, err := parseID(v)
+		return err
+	})
+	if err != nil {
+		return 0, err
+	}
+	id, _ := strconv.Atoi(v)
+	return id, nil
 }
 
 func (u *UI) askDetails(base student.Student, withDefaults bool) (student.Student, error) {

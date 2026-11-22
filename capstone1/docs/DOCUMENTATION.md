@@ -1,6 +1,6 @@
-# Short Documentation — Console-Based Student Management System in Go
+# Short Documentation: Console-Based Student Management System in Go
 
-**ENSP465 — New Age Programming Languages Lab · Capstone Project**
+**ENSP465: New Age Programming Languages Lab · Capstone Project**
 Divyanshi · 2301730198 · Semester VII (B.Tech CSE) · Section C · Faculty: Dr. Hemraj Kumawat
 
 ## 1. Project Overview
@@ -20,9 +20,9 @@ Small institutes still keep student data in paper registers or spreadsheets, whe
 - **View** all students in an aligned table, sorted by ID.
 - **Search** by ID or by partial, case-insensitive name.
 - **Update** any field (press Enter to keep the current value); **delete** with y/n confirmation.
-- **Automatic results** — total, percentage and grade (O ≥ 90, A ≥ 80, B ≥ 70, C ≥ 60, D ≥ 50, else F).
-- **JSON persistence** — loaded at start-up, saved after every change using a temp file + rename, so a crash cannot leave a half-written file. If a save fails, the in-memory data is left unchanged.
-- **Validation with friendly messages** — unique positive ID, non-empty name/course, age 5–100, marks 0–100 (NaN/Inf rejected). Invalid answers are re-asked; typing `cancel` returns to the menu.
+- **Automatic results:** total, percentage and grade (O ≥ 90, A ≥ 80, B ≥ 70, C ≥ 60, D ≥ 50, else F).
+- **JSON persistence:** loaded at start-up, saved after every change using a temp file + rename, so a crash cannot leave a half-written file. If a save fails, the in-memory data is left unchanged.
+- **Validation with friendly messages:** unique positive ID, non-empty name/course, age 5–100, marks 0–100 (NaN/Inf rejected). Invalid answers are re-asked; typing `cancel` returns to the menu.
 
 ## 4. Technologies Used
 
@@ -31,7 +31,7 @@ Small institutes still keep student data in paper registers or spreadsheets, whe
 
 ## 5. Implementation
 
-Layered architecture — each package has a single responsibility:
+Layered architecture where each package has a single responsibility:
 
 ```
 main.go ──► ui ──► service ──► store (interface) ──► students.json
@@ -46,7 +46,7 @@ main.go ──► ui ──► service ──► store (interface) ──► stu
 | `student` | The `Student` struct plus two files: `validator.go` (field-level and whole-record rules returning sentinel errors) and `calc.go` (`Total`, `Percentage`, `Grade`, `Compute`; grading bands live in one table). |
 | `store` | `Store` interface (`Load`, `Save`) and the atomic `FileStore`. |
 
-**Worked example** — ID 101, Aman Verma, marks 78, 85, 90, 72, 88 → total 413/500, 82.60 %, grade **A**.
+**Worked example:** ID 101, Aman Verma, marks 78, 85, 90, 72, 88 → total 413/500, 82.60 %, grade **A**.
 
 ## 6. User Interface (console)
 
@@ -318,4 +318,11 @@ Contents of the saved `students.json`:
 ```bash
 go run .
 ```
+
+## 8. Phase III Deliverables (Testing, Verification & Final Documentation)
+
+Phase III completes Milestones 5 and 6 with automated unit, persistence, and UI tests (**100.0%** statement coverage on `student` and `service`; **91.2%** overall), 100% agreement across a 12-student hand-computed verification dataset, edge-case refinements, and final documentation:
+
+- [Phase III Test Report](TEST_REPORT.md)
+
 
